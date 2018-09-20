@@ -10,13 +10,13 @@ bw = 4*10e3; %battery cells for W
 br = 6*10e3; %battery cells for R
 hrw = 15; %hours required for W
 hrr = 10; %hours required for R
-nemp = 100 + E2; %number of employees
-hpm = 160; %hours per month per employee
-thpm = nemp * hpm;
+emp = 100 + E2; %number of employees
+hpm = 100; %hours per month per employee
+thpm = emp + 
 ms = 3000 + 50*E3; %monthly salary
 avs = (15 + E3) * 10e3; %available storage space
 rssw = 12; % required storage space W
-rssr = 10; % required storage space R
+sspr = 10; % required storage space R
 pr = 55000; %price R
 pw = 75000; %price W
 mcr = 30000; %manufacturing cost R
@@ -24,12 +24,13 @@ mcw = 45000; %manufacturing cost W
 
 c = [(mcr - pr), (mcw - pw)];
 
-A =[br,     bw;
-    rssr,   rssw;
+A =[bw,     br;
+    sspr,   sspw;
     hrr,    hrw];
 
-b = [bc, avs, thpm];
+b = [bc, avs, ];
 
-options = optimoptions('linprog','Algorithm','dual-simplex')
+options = optimoptions('linprog','Algorithm','simplex','on',...
+                        'Display','off')
                     
-x=linprog(c,A,b,options)
+x=linprog(c,A,b,Aeq,beq,lb,ub,x0,options)
