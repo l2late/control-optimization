@@ -62,7 +62,7 @@ c = [(mcr - pr), (mcw - pw)];
 lb = [0 0]; %lower bound
 
 ub = [1000 inf]; %upper bound
-x_3 = 0:72;
+x_3 = 0:72; 
 
 for i = 1:length(x_3)
     
