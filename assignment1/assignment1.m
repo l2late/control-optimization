@@ -1,36 +1,46 @@
-%Luca = 040
-%Nathan = 449
-
-clear all
-
+%% Assignment 1 Linear Programming
+% Luca de Laat      - 4135040
+% Nathan Timmers    - 4283449
+clear all; close all; clc;
+fprintf('Assignment 1 - Linear Programming \n')
+fprintf('Luca de Laat   - 4135040 \n')
+fprintf('Nathan Timmers - 4283449 \n\n')
+%% Initializing Constants
 E1 = 4;
 E2 = 8;
 E3 = 9;
 
-bc = (5 + E1) * 10e6; %battery cells
-bw = 6*10e3; %battery cells for W
-br = 4*10e3; %battery cells for R
-bv = 2*10e3; %battery cells for V
-hrw = 15; %hours required for W
-hrr = 10; %hours required for R
-hrv = 8;  %hours required for V
-nemp = 100 + E2; %number of employees
-hpm = 160; %hours per month per employee
-thpm = nemp * hpm; % total hours
-ms = 3000 + 50*E3; %monthly salary
-avs = (15 + E3) * 10e3; %available storage space
-rssw = 12; % required storage space W
-rssr = 10; % required storage space R
-rssv = 8;  % required storage space V
-pr = 55000; %price R
-pw = 75000; %price W
-pv = 45000; %price V
-mcr = 30000; %manufacturing cost R
-mcw = 45000; %manufacturing cost W
-mcv = 15000; %manufacturing cost V
+% Battery constraints
+bc = (5 + E1) * 10e6;       % battery cells
+bw = 6*10e3;                % battery cells for W
+br = 4*10e3;                % battery cells for R
+bv = 2*10e3;                % battery cells for V
 
+% Storage space contraints
+avs = (15 + E3) * 10e3;     % available storage space
+rssw = 12;                  % required storage space W
+rssr = 10;                  % required storage space R
+rssv = 8;                   % required storage space V
 
-%% Part 2
+% Time constraints
+hrw = 15;                   % hours required for W
+hrr = 10;                   % hours required for R
+hrv = 8;                    % hours required for V
+nemp = 100 + E2;            % number of employees
+hpm = 160;                  % hours per month per employee
+thpm = nemp * hpm;          % total hours
+
+% Costs
+ms = 3000 + 50*E3;          % monthly salary
+pr = 55000;                 % price R
+pw = 75000;                 % price W
+pv = 45000;                 % price V
+mcr = 30000;                % manufacturing cost R
+mcw = 45000;                % manufacturing cost W
+mcv = 15000;                % manufacturing cost V
+
+%% Question 1 & 2
+fprintf('Question 1 & 2: \n')
 c = [(mcr - pr), (mcw - pw)];
 
 A =[br,     bw;
@@ -43,32 +53,42 @@ lb = [0 0]; %lower bound
 
 ub = [inf inf]; %upper bound
 
-options = optimoptions('linprog','Algorithm','dual-simplex');
+options = optimoptions('linprog','Algorithm','dual-simplex','Display','off');
 
 [x1,~,exitflag,~,~] = linprog(c,A,b,[],[],lb,ub,options);
 assert(exitflag == 1);
-round(x1)
-profit1 =-c*round(x1) - nemp*ms % Total profit
-s = -(A*x1-b')
-%% Part 3
+round(x1);
+profitQ2 =-c*round(x1) - nemp*ms; % Total profit
+sQ2 = -(A*x1-b');
 
-ub = [1000 inf]; %upper bound
+fprintf('Number of model R cars: %d \nNumber of model W cars: %d \n', x1(1), x1(2))
+fprintf('Total optimal profit for Question 2: %3.0f \n\n', profitQ2)
+
+%% Question 3
+fprintf('Question 3: \n')
+ub = [1000 inf]; % upper bound
 
 [x2,~,exitflag,~,~] = linprog(c,A,b,[],[],lb,ub,options);
 assert(exitflag == 1);
-round(x2)
-profit2 =-c*round(x2)  - nemp*ms % Total profit
+x2 = round(x2);
+profitQ3 =-c*round(x2)  - nemp*ms; % Total profit
 
-%% Part 3
+fprintf('Number of model R cars: %d \nNumber of model W cars: %d \n', x2(1), x2(2))
+fprintf('Total optimal profit for Question 3: %3.0f \n\n', profitQ3)
 
-bc = (8 + E1) * 10e6; %battery cells
-avs = (22 + E3) * 10e3; %available storage space
+
+%% Question 4 & 5
+fprintf('Question 4 & 5: \n')
+bc = (8 + E1) * 10e6;       % new battery cells constraint
+avs = (22 + E3) * 10e3;     % new available storage space constraint
 
 c = [(mcr - pr), (mcw - pw)];
 
-lb = [0 0]; %lower bound
+lb = [0 0];                 % lower bound
 
-ub = [1000 inf]; %upper bound
+ub = [1000 inf];            % upper bound
+
+% Loop over extra hired workers
 x_3 = 0:72;
 
 for i = 1:length(x_3)
@@ -84,16 +104,18 @@ for i = 1:length(x_3)
     [x3(:,i),~,exitflag,~,~] = linprog(c,A,b,[],[],lb,ub,options);
     assert(exitflag == 1);
     round(x3(:,i));
-    profit3(i) = -c*round(x3(:,i))-ms*x_3(i);
+    profitQ4(i) = -c*round(x3(:,i))-ms*x_3(i);
 end
 
-maxIndex = find(profit3 == max(profit3));
-x3(:,maxIndex)
-optWorkers = x_3(maxIndex)
-maxProfit = profit3(maxIndex)  - nemp*ms % Total profit
-% plot(x_3,profit3)
+maxIndex = find(profitQ4 == max(profitQ4));
+optWorkers = x_3(maxIndex);
+maxProfitQ4 = profitQ4(maxIndex)  - nemp*ms; % Total profit
+fprintf('Optimal amount of extra hired workers: %d \n', optWorkers)
+fprintf('Number of model R cars: %d \nNumber of model W cars: %d \n', x3(1,maxIndex), round(x3(2,maxIndex)))
+fprintf('Total optimal profit for Question 4: %3.0f \n \n', maxProfitQ4)
 
-%% Part 4
+%% Question 6
+fprintf('Question 6: \n')
 whr = 5/60*optWorkers;
 
 c4 = [(mcr - pr), (mcw - pw), (mcv - pv) ];
