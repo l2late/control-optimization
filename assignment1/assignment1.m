@@ -45,7 +45,8 @@ ub = [inf inf]; %upper bound
 
 options = optimoptions('linprog','Algorithm','dual-simplex');
 
-[x1,fval,exitflag,output,lambda] = linprog(c,A,b,[],[],lb,ub,options);
+[x1,~,exitflag,~,~] = linprog(c,A,b,[],[],lb,ub,options);
+assert(exitflag == 1);
 round(x1)
 profit1 =-c*round(x1)
 
@@ -53,7 +54,8 @@ profit1 =-c*round(x1)
 
 ub = [1000 inf]; %upper bound
 
-[x2,fval,exitflag,output,lambda] = linprog(c,A,b,[],[],lb,ub,options);
+[x2,~,exitflag,~,~] = linprog(c,A,b,[],[],lb,ub,options);
+assert(exitflag == 1);
 round(x2)
 profit2 =-c*round(x2)
 
@@ -67,7 +69,7 @@ c = [(mcr - pr), (mcw - pw)];
 lb = [0 0]; %lower bound
 
 ub = [1000 inf]; %upper bound
-x_3 = 0:72; 
+x_3 = 0:72;
 
 for i = 1:length(x_3)
     
@@ -79,7 +81,8 @@ for i = 1:length(x_3)
     
     b = [bc, avs, thpm+160*x_3(i)];
     
-    [x3(:,i),fval,exitflag,output,lambda] = linprog(c,A,b,[],[],lb,ub,options);
+    [x3(:,i),~,exitflag,~,~] = linprog(c,A,b,[],[],lb,ub,options);
+    assert(exitflag == 1);
     round(x3(:,i));
     profit3(i) = -c*round(x3(:,i))-ms*x_3(i);
 end
@@ -90,6 +93,7 @@ optWorkers = x_3(maxIndex)
 maxProfit = profit3(maxIndex)
 
 %% Part 4
+whr = 5/60*optWorkers;
 
 c4 = [(mcr - pr), (mcw - pw), (mcv - pv) ];
 
@@ -98,28 +102,25 @@ lb4 = [1250 1000 1500]; %lower bound
 ub4 = [inf inf inf]; %upper bound
 
 A4 = [br,        bw,         bv;
-     rssr,      rssw,       rssv;
-     hrr-whr,   hrw-whr,    hrv-whr];
- 
+    rssr,      rssw,       rssv;
+    hrr-whr,   hrw-whr,    hrv];
+
 b4 = [bc, avs, thpm+160*optWorkers];
 
-[x4,fval,exitflag,output,lambda] = linprog(c4,A4,b4,[],[],lb4,ub4,options);
+[x4,fval,exitflag,~,~] = linprog(c4,A4,b4,[],[],lb4,ub4,options);
 
 if isempty(x4)
     msg = 'It is NOT economically beneficial to build the new model V';
     warning(msg);
+    
+    % check if x1 = 1500, x2 = 1000, x3 = 0 is within constraints
+    xcheck = [1250;1000;0];
+    
+    if(A4*xcheck-(b4')>0)
+        msg = 'Contract for Model W and Model R is not within constraints';
+        warning(msg);
+    else
+        disp('Contract for Model W and Model R is within constraints');
+    end
 
-    c5 = [(mcr - pr), (mcw - pw)];
-
-    lb5 = [1250 1000]; %lower bound
-
-    ub5 = [inf inf]; %upper bound
-
-    A5 = [br,       bw;
-         rssr,      rssw;
-         hrr-whr,   hrw-whr];
-
-    b5 = [bc, avs, thpm+160*optWorkers];
-
-    [x5,fval,exitflag,output,lambda] = linprog(c5,A5,b5,[],[],lb5,ub5,options);
 end
