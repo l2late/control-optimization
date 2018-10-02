@@ -48,8 +48,8 @@ options = optimoptions('linprog','Algorithm','dual-simplex');
 [x1,~,exitflag,~,~] = linprog(c,A,b,[],[],lb,ub,options);
 assert(exitflag == 1);
 round(x1)
-profit1 =-c*round(x1)
-
+profit1 =-c*round(x1) - nemp*ms % Total profit
+s = -(A*x1-b')
 %% Part 3
 
 ub = [1000 inf]; %upper bound
@@ -57,7 +57,7 @@ ub = [1000 inf]; %upper bound
 [x2,~,exitflag,~,~] = linprog(c,A,b,[],[],lb,ub,options);
 assert(exitflag == 1);
 round(x2)
-profit2 =-c*round(x2)
+profit2 =-c*round(x2)  - nemp*ms % Total profit
 
 %% Part 3
 
@@ -90,7 +90,8 @@ end
 maxIndex = find(profit3 == max(profit3));
 x3(:,maxIndex)
 optWorkers = x_3(maxIndex)
-maxProfit = profit3(maxIndex)
+maxProfit = profit3(maxIndex)  - nemp*ms % Total profit
+% plot(x_3,profit3)
 
 %% Part 4
 whr = 5/60*optWorkers;
