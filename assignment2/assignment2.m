@@ -14,13 +14,14 @@ E3 = 9;
 %% Question 1 & 2
 fprintf('Question 1 & 2: \n')
 
+% Get input from table
 measurements = readtable('measurements.csv');
 Qin = measurements{:,2};
 Qout = measurements{:,3};
 T = measurements{:,4};
 Tamb = measurements{:,5};
 
-endV = 100 + E1;
+endV = 101 + E1;
 dt = 3600;
 
 dT = Tamb - T;
@@ -28,7 +29,6 @@ dQ = Qin - Qout;
 
 E = Tamb(1:endV-1);
 Y = T(2:endV)-T(1:endV-1);
-
 phi = -[dt*dT(1:endV-1),dt*dQ(1:endV-1)];
 
 H = 2*(phi'*phi);
@@ -44,7 +44,7 @@ assert(FLAG>0)
 a1 = x(1);
 a2 = x(2);
 A = 1-a1*dt;
-B = a2*dt;
+B = [-a2*dt,a2*dt];
 ck = a1*dt;
 
 max(abs(T(2:endV)-(a1*dt*dT(1:endV-1) + a2*dt*dQ(1:endV-1)) - T(1:endV-1)));
@@ -55,3 +55,26 @@ fprintf('Yielding: \n A  =  %1.5f \n B  = %1.5f E-5 \n ck = %1.5f E-4 * Tamb \n\
 
 %% Question 3
 fprintf('Question 3: \n')
+
+% Get input from tables
+heatDemandT  = readtable('heatDemand.csv');
+inputPricesT = readtable('inputPrices.csv');
+Qout       = heatDemandT{:,2};        % [W]
+inputPrices  = inputPricesT{:,2}; % [EUR/MWh]
+
+N = 360;                % [hours]
+QinMax = (100+E2)*1E3;  % [W]
+T(1) = 330 + E3;        % [K]
+Tamb(:) = 275 + E1;     % [K]
+Tmin = 315;             % [K]
+
+a1 = 1.96E-7;
+a2 = 3.8E-9;
+A = 1-a1*dt;
+B = a2*dt;
+ck = a1*dt;
+
+
+inputPrices = inputPrices/(1E6*N);  % [EUR/W]
+
+% T(k+1) = A*T(k) + B*
