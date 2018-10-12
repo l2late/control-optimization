@@ -14,9 +14,13 @@ E3 = 9;
 %% Question 1 & 2
 fprintf('Question 1 & 2: \n')
 
-[~,Qin,Qout,T,Tamb] = importMeasurements('measurements.csv');
-endV = 100 + E1;
+measurements = readtable('measurements.csv');
+Qin = measurements{:,2};
+Qout = measurements{:,3};
+T = measurements{:,4};
+Tamb = measurements{:,5};
 
+endV = 100 + E1;
 dt = 3600;
 
 dT = Tamb - T;
@@ -46,5 +50,8 @@ ck = a1*dt;
 max(abs(T(2:endV)-(a1*dt*dT(1:endV-1) + a2*dt*dQ(1:endV-1)) - T(1:endV-1)));
 
 
-fprintf('The values of the system parameters are: \n a1 = %1.4f E-7 \n a2 = %1.4f E-7 \n', a1*1E7, a2*1E7)
-fprintf('Yielding: \n A  =  %1.4f \n B  = %1.4f E-5 \n ck = %1.4f E-4 * Tamb \n\n', A, B*1E5, ck*1E4)
+fprintf('The values of the system parameters are: \n a1 = %1.4f E-7 \n a2 = %1.4f E-9 \n', a1*1E7, a2*1E9)
+fprintf('Yielding: \n A  =  %1.5f \n B  = %1.5f E-5 \n ck = %1.5f E-4 * Tamb \n\n', A, B*1E5, ck*1E4)
+
+%% Question 3
+fprintf('Question 3: \n')
