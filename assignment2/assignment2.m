@@ -11,6 +11,7 @@ E1 = 4;
 E2 = 8;
 E3 = 9;
 
+plotResult = false;
 %% Question 1 & 2
 fprintf('Question 1 & 2: \n')
 
@@ -80,33 +81,50 @@ inputPrices = inputPrices/(1E6*N);  % [EUR/W]
 fprintf('Prices multiplied with a factor of: 1/(1E6*N) = %d \n', 1/(1E6*N))
 
 
-feval = zeros(N,1);
+c = [zeros(N,1),inputPrices(1:N)*dt];
 
-for k = 1:N
-    
-    c = [0,inputPrices(k)*dt];
-    
-    % Equality constraints
-    Aeq = [1,-B(2)];
-    beq = A*T(k) + B(1)*Qout(k) + ck*Tamb(k);
-    
-    % Inequality constraints
-    Am = [];%[-1,0];
-    b = [];%Tmin;
-    
-    lb = [Tmin,0]; %lower bound
-    
-    ub = [inf,QinMax]; %upper bound
-    
-    options = optimoptions('linprog','Algorithm','dual-simplex','Display','off');
-    
-    [x2,feval(k),exitflag,~,~] = linprog(c,Am,b,Aeq,beq,lb,ub,options);
-    assert(exitflag > 0);
-    
-    T(k+1) = x2(1);
-%     cost(k) = c*x2;
+% Equality constraints
+Aeq = [eye(N)*1,eye(N)*-B(2)];
+Aeq(2:N,1:N-1) = Aeq(2:N,1:N-1) + eye(N-1)*-A;
 
+beq = A*T(1:N) + B(1)*Qout(1:N) + ck*Tamb(1:N);
+
+% for i = 2:(size(Aeq,1))
+%     Aeq(i,(N+1):end) = Aeq(i,(N+1):end) + A*Aeq(i-1,(N+1):end);
+%     beq(i) = A^(i-1)*T(1) + B(1)*Qout(i) + ck*Tamb(i); 
+%     
+%     %     beq(i) = A^(i-1)*beq(i-1) + B(1)*Qout(i) + ck*Tamb(i);
+%     %     A^(i-1)*T(1) + B(1)*Qout(i) + ck*Tamb(i);   
+% end
+
+
+
+% Inequality constraints
+Am = [];%[-1,0];
+b = [];%Tmin;
+
+lb = ones(N,1)*[Tmin,0]; %lower bound
+
+ub = ones(N,1)*[inf,QinMax]; %upper bound
+
+options = optimoptions('linprog','Algorithm','dual-simplex','Display','off');
+
+[x2,cost,exitflag,~,~] = linprog(c,Am,b,Aeq,beq,lb,ub,options);
+assert(exitflag > 0);
+
+
+fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', cost)
+
+if(plotResult)
+    subplot(3,1,1)
+    plot(1:N,x2(1:N))
+    title('Temperature [K]')
+    
+    subplot(3,1,2)
+    plot(1:N,x2(N+1:end))
+    title('Q^i^n [W]')
+    
+    subplot(3,1,3)
+    plot(1:N,inputPrices(1:N))
+    title('Price input heat [EUR/W]')
 end
-costT = sum(feval);
-
-fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', costT)
