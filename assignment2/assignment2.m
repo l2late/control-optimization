@@ -77,8 +77,12 @@ B = [-a2,a2]*dt;
 ck = a1*dt;
 
 inputPrices = inputPrices/(1E6*N);  % [EUR/W]
+fprintf('Prices multiplied with a factor of: 1/(1E6*N) = %d \n', 1/(1E6*N))
 
-for k = 1:(size(Qout,1)-1)
+
+feval = zeros(N,1);
+
+for k = 1:N
     
     c = [0,inputPrices(k)*dt];
     
@@ -92,14 +96,17 @@ for k = 1:(size(Qout,1)-1)
     
     lb = [Tmin,0]; %lower bound
     
-    ub = [0,QinMax]; %upper bound
+    ub = [inf,QinMax]; %upper bound
     
     options = optimoptions('linprog','Algorithm','dual-simplex','Display','off');
     
-    [x2,~,exitflag,~,~] = linprog(c,Am,b,Aeq,beq,lb,ub,options);
+    [x2,feval(k),exitflag,~,~] = linprog(c,Am,b,Aeq,beq,lb,ub,options);
     assert(exitflag > 0);
     
-    T(k+1) = A*T(k) + B*[Qout(k);x2] + ck*Tamb(k);
+    T(k+1) = x2(1);
+%     cost(k) = c*x2;
 
 end
-cost = sum(c*x2);
+costT = sum(feval);
+
+fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', costT)
