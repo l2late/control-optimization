@@ -80,20 +80,19 @@ inputPrices = inputPrices/(1E6*N);  % [EUR/W]
 
 for k = 1:(size(Qout,1)-1)
     
-    c = inputPrices(k)*dt;
+    c = [0,inputPrices(k)*dt];
     
     % Equality constraints
-    Aeq = B(2);
-    beq = T(k+1) - A*T(k) - B(1)*Qout(k) - ck*Tamb(k);
-    
+    Aeq = [1,-B(2)];
+    beq = A*T(k) + B(1)*Qout(k) + ck*Tamb(k);
     
     % Inequality constraints
-    Am = -B(2);
-    b = A*T(k) + B(1)*Qout(k) + ck*Tamb(k);% - Tmin ;
+    Am = [];%[-1,0];
+    b = [];%Tmin;
     
-    lb = 0; %lower bound
+    lb = [Tmin,0]; %lower bound
     
-    ub = QinMax; %upper bound
+    ub = [0,QinMax]; %upper bound
     
     options = optimoptions('linprog','Algorithm','dual-simplex','Display','off');
     
@@ -103,4 +102,4 @@ for k = 1:(size(Qout,1)-1)
     T(k+1) = A*T(k) + B*[Qout(k);x2] + ck*Tamb(k);
 
 end
-cost = sum(c'*x2);
+cost = sum(c*x2);
