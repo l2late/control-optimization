@@ -11,7 +11,7 @@ E1 = 4;
 E2 = 8;
 E3 = 9;
 
-plotResult = false;
+plotResult = true;
 %% Question 1 & 2
 fprintf('Question 1 & 2: \n')
 
@@ -104,7 +104,6 @@ Am = [];%[-1,0];
 b = [];%Tmin;
 
 lb = ones(N,1)*[Tmin,0]; %lower bound
-
 ub = ones(N,1)*[inf,QinMax]; %upper bound
 
 options = optimoptions('linprog','Algorithm','dual-simplex','Display','off');
@@ -116,12 +115,53 @@ assert(exitflag > 0);
 fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', cost)
 
 if(plotResult)
+    figure();
     subplot(3,1,1)
     plot(1:N,x2(1:N))
     title('Temperature [K]')
     
     subplot(3,1,2)
     plot(1:N,x2(N+1:end))
+    title('Q^i^n [W]')
+    
+    subplot(3,1,3)
+    plot(1:N,inputPrices(1:N))
+    title('Price input heat [EUR/W]')
+end
+
+%% Question 4
+fprintf('Question 4: \n')
+
+Tmax = 368;
+Tref = 323;
+
+H = zeros(2*N);
+H(N,N) = 2*(0.1+E2/10);
+
+c = zeros(2*N,1);
+c(N) = -2*Tref;
+c(N+1:end) = inputPrices(1:N) * dt;
+
+Am = [];
+b = [];
+
+lb = ones(N,1)*[Tmin,0]; %lower bound
+ub = ones(N,1)*[Tmax,QinMax]; %upper bound
+
+o = optimoptions('quadprog','Algorithm','interior-point-convex','Display','iter');
+[x3,cost2,FLAG] = quadprog(H,c,Am,b,Aeq,beq,lb,ub,[],o);
+assert(FLAG>0)
+
+fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', cost2)
+
+if(plotResult)
+    figure();
+    subplot(3,1,1)
+    plot(1:N,x3(1:N))
+    title('Temperature [K]')
+    
+    subplot(3,1,2)
+    plot(1:N,x3(N+1:end))
     title('Q^i^n [W]')
     
     subplot(3,1,3)
