@@ -39,20 +39,19 @@ lb = [-0.99 -Inf]';
 ub = [ 0.99  Inf]';
 
 o = optimoptions('quadprog','Algorithm','interior-point-convex','Display','off');
-[x1,~,FLAG] = quadprog(H,c,[],[],[],[],lb,ub,[],o);
+[x,~,FLAG] = quadprog(H,c,[],[],[],[],lb,ub,[],o);
 assert(FLAG>0)
 
-a1 = x1(1);
-a2 = x1(2);
+a1 = x(1);
+a2 = x(2);
 A = 1-a1*dt;
 B = [-a2,a2]*dt;
 ck = a1*dt;
 
-max(abs(T(2:endV)-(a1*dt*dT(1:endV-1) + a2*dt*dQ(1:endV-1)) - T(1:endV-1)));
-
-
 fprintf('The values of the system parameters are: \n a1 = %1.4f E-7 \n a2 = %1.4f E-9 \n', a1*1E7, a2*1E9)
 fprintf('Yielding: \n A  =  %1.5f \n B  = [%1.5f, %1.5f] E-5 \n ck = %1.5f E-4 * Tamb \n\n', A, B(1)*1E5, B(2)*1E5, ck*1E4)
+
+clearvars -except E1 E2 E3 dt plotResult
 
 %% Question 3
 fprintf('Question 3: \n')
@@ -60,7 +59,7 @@ fprintf('Question 3: \n')
 % Get input from tables
 heatDemandT  = readtable('heatDemand.csv');
 inputPricesT = readtable('inputPrices.csv');
-Qout       = heatDemandT{:,2};        % [W]
+Qout         = heatDemandT{:,2};  % [W]
 inputPrices  = inputPricesT{:,2}; % [EUR/MWh]
 
 T = zeros(size(Qout,1),1);
@@ -77,11 +76,11 @@ A = 1-a1*dt;
 B = [-a2,a2]*dt;
 ck = a1*dt;
 
-factor = 1/(1E6); %1/(1E6 *N)?
-inputPrices = inputPrices*factor;  % [EUR/W]
-fprintf('Prices multiplied with a factor of: 1/(1E6*N) = %d \n', factor)
+factor = 1/(1E6); 
+inputPrices = inputPrices*factor;  % [EUR/Wh]
+fprintf('Prices multiplied with a factor of: 1/(1E6) = %d \n', factor)
 
-
+% Cost
 c = [zeros(N,1),inputPrices(1:N)]; % * dt?
 
 % Equality constraints
@@ -89,16 +88,6 @@ Aeq = [eye(N)*1,eye(N)*-B(2)];
 Aeq(2:N,1:N-1) = Aeq(2:N,1:N-1) + eye(N-1)*-A;
 
 beq = A*T(1:N) + B(1)*Qout(1:N) + ck*Tamb(1:N);
-
-% for i = 2:(size(Aeq,1))
-%     Aeq(i,(N+1):end) = Aeq(i,(N+1):end) + A*Aeq(i-1,(N+1):end);
-%     beq(i) = A^(i-1)*T(1) + B(1)*Qout(i) + ck*Tamb(i); 
-%     
-%     %     beq(i) = A^(i-1)*beq(i-1) + B(1)*Qout(i) + ck*Tamb(i);
-%     %     A^(i-1)*T(1) + B(1)*Qout(i) + ck*Tamb(i);   
-% end
-
-
 
 % Inequality constraints
 Am = [];%[-1,0];
@@ -109,8 +98,8 @@ ub = ones(N,1)*[inf,QinMax]; %upper bound
 
 options = optimoptions('linprog','Algorithm','dual-simplex','Display','off');
 
-[x2,cost,exitflag,~,~] = linprog(c,Am,b,Aeq,beq,lb,ub,options);
-assert(exitflag > 0);
+[x,cost,FLAG,~,~] = linprog(c,Am,b,Aeq,beq,lb,ub,options);
+assert(FLAG > 0);
 
 
 fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', cost)
@@ -118,11 +107,11 @@ fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', cost)
 if(plotResult)
     figure();
     subplot(3,1,1)
-    plot(1:N,x2(1:N))
+    plot(1:N,x(1:N))
     title('Temperature [K]')
     
     subplot(3,1,2)
-    plot(1:N,x2(N+1:end))
+    plot(1:N,x(N+1:end))
     title('Q^i^n [W]')
     
     subplot(3,1,3)
@@ -130,18 +119,21 @@ if(plotResult)
     title('Price input heat [EUR/W]')
 end
 
+clearvars -except E1 E2 E3 dt plotResult inputPrices Aeq beq Tmin N QinMax
+
 %% Question 4
 fprintf('Question 4: \n')
 
 Tmax = 368;
 Tref = 323;
 
+penRef = (0.1+E2/10);
 H = zeros(2*N);
-H(N,N) = 2*(0.1+E2/10);
+H(N,N) = 2*penRef;
 
 c = zeros(2*N,1);
-c(N) = -2*Tref;
-c(N+1:end) = inputPrices(1:N) * dt;
+c(N) = -2*penRef*Tref;
+c(N+1:end) = inputPrices(1:N);
 
 Am = [];
 b = [];
@@ -150,19 +142,19 @@ lb = ones(N,1)*[Tmin,0]; %lower bound
 ub = ones(N,1)*[Tmax,QinMax]; %upper bound
 
 o = optimoptions('quadprog','Algorithm','interior-point-convex','Display','iter');
-[x3,cost2,FLAG] = quadprog(H,c,Am,b,Aeq,beq,lb,ub,[],o);
+[x,cost,FLAG] = quadprog(H,c,Am,b,Aeq,beq,lb,ub,[],o);
 assert(FLAG>0)
 
-fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', cost2)
+fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', cost + penRef*Tref^2)
 
 if(plotResult)
     figure();
     subplot(3,1,1)
-    plot(1:N,x3(1:N))
+    plot(1:N,x(1:N))
     title('Temperature [K]')
     
     subplot(3,1,2)
-    plot(1:N,x3(N+1:end))
+    plot(1:N,x(N+1:end))
     title('Q^i^n [W]')
     
     subplot(3,1,3)
