@@ -77,11 +77,12 @@ A = 1-a1*dt;
 B = [-a2,a2]*dt;
 ck = a1*dt;
 
-inputPrices = inputPrices/(1E6*N);  % [EUR/W]
-fprintf('Prices multiplied with a factor of: 1/(1E6*N) = %d \n', 1/(1E6*N))
+factor = 1/(1E6); %1/(1E6 *N)?
+inputPrices = inputPrices*factor;  % [EUR/W]
+fprintf('Prices multiplied with a factor of: 1/(1E6*N) = %d \n', factor)
 
 
-c = [zeros(N,1),inputPrices(1:N)*dt];
+c = [zeros(N,1),inputPrices(1:N)]; % * dt?
 
 % Equality constraints
 Aeq = [eye(N)*1,eye(N)*-B(2)];
