@@ -13,6 +13,19 @@ E3 = (0+9)/2;
 
 plotResult = true;
 
+N = 4;      % number of segments
+tau = 10;   % s
+mu = 80;    % km^2/h
+Cr = 2000;  % veh/h
+rhom = 120; % veh/(km*lane)
+alpha = 0.1;
+K = 10;
+a = 2;
+vf = 110;   % km/h
+rhoc = 28;  % veh/(km*lane)
+
+q0 = [7000 + 100*E1; 
+      2000 + 100*E3];
 %% Question 1 & 2
 fprintf('Question 1 & 2: \n')
 
