@@ -11,7 +11,7 @@ E1 = 4;
 E2 = 8;
 E3 = 9;
 
-plotResult = false;
+plotResult = true;
 
 %% Question 1 & 2
 fprintf('Question 1 & 2: \n')
@@ -77,12 +77,12 @@ A   = 1-a1*dt;
 B   = [-a2,a2]*dt;
 ck  = a1*dt;
 
-factor = 1/(1E6); 
+factor = 1/(1E6*dt); 
 inputPrices = inputPrices*factor;  % [EUR/Wh]
-fprintf('Prices multiplied with a factor of: 1/(1E6) = %d \n', factor)
+fprintf('Prices multiplied with a factor of: 1/(1E6*dt) = %d \n', factor)
 
 % Cost
-c = [zeros(N,1),inputPrices(1:N)]; % * dt?
+c = [zeros(N,1),inputPrices(1:N)*dt]; % * dt?
 
 % Equality constraints
 Aeq             = [eye(N)*1,eye(N)*-B(2)];
@@ -107,16 +107,21 @@ fprintf('The optimal cost of buying the input energy is: %6.2f euro \n\n', cost)
 if(plotResult)
     figure();
     subplot(3,1,1)
-    plot(1:N,x(1:N))
-    title('Temperature [K]')
+    plot(1:N,x(1:N),'LineWidth',3)
+    title('Optimization of buyin input energy')
+    ylabel('Temperature [K]')
+    set(gca,'FontSize',20)
     
     subplot(3,1,2)
-    plot(1:N,x(N+1:end))
-    title('Q^i^n [W]')
+    plot(1:N,x(N+1:end),'LineWidth',3)
+    ylabel('Q^i^n [W]')
+    set(gca,'FontSize',20)
     
     subplot(3,1,3)
-    plot(1:N,inputPrices(1:N))
-    title('Price input heat [EUR/W]')
+    plot(1:N,inputPrices(1:N),'LineWidth',3)
+    xlabel('time [h]')
+    ylabel('Price input heat [EUR/W]')
+    set(gca,'FontSize',20)
 end
 
 clearvars -except E1 E2 E3 dt plotResult inputPrices Aeq beq Tmin N QinMax
@@ -133,7 +138,7 @@ H(N,N)  = 2*penRef;
 
 c           = zeros(2*N,1);
 c(N)        = -2*penRef*Tref;
-c(N+1:end)  = inputPrices(1:N);
+c(N+1:end)  = inputPrices(1:N)*dt;
 
 Am  = [];
 b   = [];
@@ -154,14 +159,19 @@ fprintf('The amount destined to pay the terminal cost is: %3.2f   euro \n\n', te
 if(plotResult)
     figure();
     subplot(3,1,1)
-    plot(1:N,x(1:N))
-    title('Temperature [K]')
+    plot(1:N,x(1:N),'LineWidth',3)
+    title('Optimization of buyin input energy with extra constraint')
+    ylabel('Temperature [K]')
+    set(gca,'FontSize',20)
     
     subplot(3,1,2)
-    plot(1:N,x(N+1:end))
-    title('Q^i^n [W]')
+    plot(1:N,x(N+1:end),'LineWidth',3)
+    ylabel('Q^i^n [W]')
+    set(gca,'FontSize',20)
     
     subplot(3,1,3)
-    plot(1:N,inputPrices(1:N))
-    title('Price input heat [EUR/W]')
+    plot(1:N,inputPrices(1:N),'LineWidth',3)
+    xlabel('time [h]')
+    ylabel('Price input heat [EUR/W]')
+    set(gca,'FontSize',20)
 end
