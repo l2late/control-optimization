@@ -7,9 +7,9 @@ fprintf('Luca de Laat   - 4135040 \n')
 fprintf('Nathan Timmers - 4283449 \n\n')
 
 %% Initializing Constants
-E1 = 4;
-E2 = 8;
-E3 = 9;
+E1 = (0+4)/2;
+E2 = (4+4)/2;
+E3 = (0+9)/2;
 
 plotResult = true;
 
