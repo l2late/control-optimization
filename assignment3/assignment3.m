@@ -30,6 +30,7 @@ lambda  = 4;
 Dr      = 1500; %veh/h
 T       = tau;
 
+% for k>=12
 q0 = [7000 + 100*E1; 
       2000 + 100*E3];
 %% Question 1 & 2
@@ -61,7 +62,7 @@ qr(1)
 wr = zeros(endT+1,1);
 rho = zeros(lambda,endT+1);
 
-
+% Queu length at onramp
 for j = 2:size(wr,1)
     wr(j) = wr(j-1) + T*(Dr(j-1) - qr(j-1,wr(j-1)) )
 end
@@ -69,6 +70,8 @@ end
 j = 2;
 %%
 qr(1,wr(1))
+
+% An-Ramp flow
 function valQR = qr(k,wr)
     valQR = min( [r(k)*Cr, Dr + wr/T, Cr* ( (rhom - rho(4,k)) / (rhom - rhoc)) ]);
 end
