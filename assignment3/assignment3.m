@@ -48,16 +48,8 @@ options = optimoptions('fmincon','Display','off');
 % optimFunction(U0,x0,q0(1))
 
 rDef = 1;
-for k = 1:kmax
-    
-    [U(:,k),FVAL(k),EXITFLAG] = fmincon(@(u)optimFunction(u,x(:,k),q0(k),rDef),U0,A,B,Aeq,beq,lb,ub,nonlcon,options);
-    assert(EXITFLAG>0);
-    if(k<60)
-       x(:,k+1) = updateVal(U(:,k),x(:,k),q0(k),rDef);
-    end
-    U0 = U(:,k);
 
-end
+[U0, FVAL, EXITFLAG,x] = optMetanet(x,q0,rDef,U0,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options)
 
 plotResults(x,kmax)
 
@@ -73,16 +65,9 @@ x(:,1) = x0;
 
 % Initial VSL = 60;
 rDef = 1;
-for k = 1:kmax
-    
-    [U(:,k),FVAL(k),EXITFLAG] = fmincon(@(u)optimFunction(u,x(:,k),q0(k),rDef),U01,A,B,Aeq,beq,lb,ub,nonlcon,options);
-    assert(EXITFLAG>0);
-    if(k<60)
-       x(:,k+1) = updateVal(U(:,k),x(:,k),q0(k),rDef);
-    end
-    U0 = U(:,k);
 
-end
+[U, FVAL, EXITFLAG,x] = optMetanet(x,q0,rDef,U01,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options)
+
 sum(FVAL)
 plotResults(x,kmax)
 
@@ -92,15 +77,9 @@ x = zeros(9,kmax);
 FVAL = zeros(1,kmax);
 x(:,1) = x0;
 rDef = 1;
-for k = 1:kmax
-    
-    [U(:,k),FVAL(k),EXITFLAG] = fmincon(@(u)optimFunction(u,x(:,k),q0(k),rDef),U02,A,B,Aeq,beq,lb,ub,nonlcon,options);
-    assert(EXITFLAG>0);
-    if(k<60)
-       x(:,k+1) = updateVal(U(:,k),x(:,k),q0(k),rDef);
-    end
-    U0 = U(:,k);
 
-end
+
+[U, FVAL, EXITFLAG,x] = optMetanet(x,q0,rDef,U02,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options);
+
 sum(FVAL)
 plotResults(x,kmax)
