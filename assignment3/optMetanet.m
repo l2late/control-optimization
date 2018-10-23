@@ -1,4 +1,5 @@
-function [U, FVAL, EXITFLAG,x] = optMetanet(x,q0,rDef,U0,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options)
+function [FVAL, U, EXITFLAG,x] = optMetanet(x,q0,rDef,U0,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options)
+
 
     for k = 1:kmax
 
@@ -9,5 +10,9 @@ function [U, FVAL, EXITFLAG,x] = optMetanet(x,q0,rDef,U0,kmax,A,B,Aeq,beq,lb,ub,
         end
         U0 = U(:,k);
 
+    end
+    FVAL = sum(FVAL);
+    if nargout == 1
+       clearvars -except FVAL
     end
 end

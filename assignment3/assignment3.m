@@ -49,7 +49,7 @@ options = optimoptions('fmincon','Display','off');
 
 rDef = 1;
 
-[U0, FVAL, EXITFLAG,x] = optMetanet(x,q0,rDef,U0,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options)
+[FVAL, ~, ~,x] = optMetanet(x,q0,rDef,U0,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options);
 
 plotResults(x,kmax)
 
@@ -66,9 +66,8 @@ x(:,1) = x0;
 % Initial VSL = 60;
 rDef = 1;
 
-[U, FVAL, EXITFLAG,x] = optMetanet(x,q0,rDef,U01,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options)
+[FVAL, ~, ~,x] = optMetanet(x,q0,rDef,U01,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options);
 
-sum(FVAL)
 plotResults(x,kmax)
 
 % initial VSL = 120;
@@ -79,7 +78,15 @@ x(:,1) = x0;
 rDef = 1;
 
 
-[U, FVAL, EXITFLAG,x] = optMetanet(x,q0,rDef,U02,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options);
+[FVAL, ~, ~,x] = optMetanet(x,q0,rDef,U02,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options);
 
-sum(FVAL)
 plotResults(x,kmax)
+
+%Find optimum starting point
+for j=1:61
+   U03 = [60+(j-1);60+(j-1);0.99];
+   [FVAL(j), ~, ~,x] = optMetanet(x,q0,rDef,U03,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options);
+    
+end
+
+find(FVAL == min(FVAL))
