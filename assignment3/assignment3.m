@@ -13,69 +13,63 @@ E3 = (0+9)/2;
 
 plotResult = true;
 
-global N tau mu Cr rhom alpha K a vf rhoc L lambda Dr T
-
-N       = 4;    % number of segments
-tau     = 10;   % s
-mu      = 80;   % km^2/h
-Cr      = 2000; % veh/h
-rhom    = 120;  % veh/(km*lane)
-alpha   = 0.1;
-K       = 10;
-a       = 2;
-vf      = 110;  % km/h
-rhoc    = 28;   % veh/(km*lane)
-L       = 1;    % km
-lambda  = 4;
-Dr      = 1500; %veh/h
-T       = tau;
-
-% for k>=12
-q0 = [7000 + 100*E1; 
-      2000 + 100*E3];
 %% Question 1 & 2
 fprintf('Question 1 & 2: \n')
+parameters;
+Tend    = 60*10;
+kmax = Tend / T;
 
-endT = 10*60/10;
-k = 1:endT;
-% rho(i,k+1) = rho(i,k)*(1-T*v(i,k)/L) + T/(lamda*L)(rho(i-1,k) + qr(i,k);
-% q(i,k) = min( [r(k)*Cr, Dr(k) + wr(k)/T]);
-% 
-% 
-% wr = zeros(endT+1,1);
-k = 1;
+q0 = [ones(1,11)*(7000+100*E1),ones(1,kmax-11)*(2000+100*E2)];
 
+wr = zeros(1,kmax);
+qr = zeros(1,kmax);
 
+x = zeros(9,kmax);
+x(:,1) = x0;
 
+% u = [VSL2; VSL3; r(k);
+U0 = [115;100;0.99];
+U = zeros(3,kmax);
 
-% fprintf('The values of the system parameters are: \n a1 = %d \n a2 = %d \n', a1, a2)
-% fprintf('Yielding: \n A  =  %1.5f \n B  = [%d, %d] \n ck = %d * Tamb \n\n', A, B(1), B(2), ck)
-% 
-% clearvars -except E1 E2 E3 dt plotResult
+lb = [60;60;0];
+ub = [120;120;1];
 
-%% Question 3
-fprintf('Question 3: \n')
+% Inequality constraints
+A = [];
+B = [];
 
-%%
-qr(1)
+% Equality constraints
+Aeq = [];
+beq = [];
 
-wr = zeros(endT+1,1);
-rho = zeros(lambda,endT+1);
+nonlcon = [];
+options = optimoptions('fmincon','Display','off');
 
-% Queu length at onramp
-for j = 2:size(wr,1)
-    wr(j) = wr(j-1) + T*(Dr(j-1) - qr(j-1,wr(j-1)) )
+% optimFunction(U0,x0,q0(1))
+
+rDef = 1;
+for k = 1:kmax
+    
+    [U(:,k),FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u,x(:,k),q0(k),rDef),U0,A,B,Aeq,beq,lb,ub,nonlcon,options);
+    assert(EXITFLAG>0);
+    if(k<60)
+       x(:,k+1) = updateVal(U(:,k),x(:,k),q0(k),rDef);
+    end
+    U0 = U(:,k);
+
 end
 
-j = 2;
-%%
-qr(1,wr(1))
+%% Plot results
+subplot(2,1,1)
+plot(1:k,x(1:4,:),'LineWidth',2);
+title('Density')
+ylabel('veh/(km lane)')
+legend('Density segment 1','Density segment 2','Density segment 3','Density segment 4');
+set(gca,'FontSize',20)   
 
-% An-Ramp flow
-function valQR = qr(k,wr)
-    valQR = min( [r(k)*Cr, Dr + wr/T, Cr* ( (rhom - rho(4,k)) / (rhom - rhoc)) ]);
-end
-
-function valR = r(k)
-    valR = 1;
-end
+subplot(2,1,2)
+plot(1:k,x(5:8,:),'LineWidth',2)
+title('Speed')
+ylabel('km/h')
+legend('Speed segment 1', 'Speed segment 2','Speed segment 3','Speed segment 4'); 
+set(gca,'FontSize',20)  
