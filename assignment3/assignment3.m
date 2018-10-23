@@ -26,7 +26,7 @@ qr = zeros(1,kmax);
 
 x = zeros(9,kmax);
 x(:,1) = x0;
-
+FVAL = zeros(1,kmax);
 % u = [VSL2; VSL3; r(k);
 U0 = [115;100;0.99];
 U = zeros(3,kmax);
@@ -50,7 +50,7 @@ options = optimoptions('fmincon','Display','off');
 rDef = 1;
 for k = 1:kmax
     
-    [U(:,k),FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u,x(:,k),q0(k),rDef),U0,A,B,Aeq,beq,lb,ub,nonlcon,options);
+    [U(:,k),FVAL(k),EXITFLAG] = fmincon(@(u)optimFunction(u,x(:,k),q0(k),rDef),U0,A,B,Aeq,beq,lb,ub,nonlcon,options);
     assert(EXITFLAG>0);
     if(k<60)
        x(:,k+1) = updateVal(U(:,k),x(:,k),q0(k),rDef);
@@ -59,17 +59,48 @@ for k = 1:kmax
 
 end
 
-%% Plot results
-subplot(2,1,1)
-plot(1:k,x(1:4,:),'LineWidth',2);
-title('Density')
-ylabel('veh/(km lane)')
-legend('Density segment 1','Density segment 2','Density segment 3','Density segment 4');
-set(gca,'FontSize',20)   
+plotResults(x,kmax)
 
-subplot(2,1,2)
-plot(1:k,x(5:8,:),'LineWidth',2)
-title('Speed')
-ylabel('km/h')
-legend('Speed segment 1', 'Speed segment 2','Speed segment 3','Speed segment 4'); 
-set(gca,'FontSize',20)  
+%% Question 3
+fprintf('Question 3: \n')
+
+U01 = [60;60;0.99];
+U02 = [120;120;0.99];
+U = zeros(3,kmax);
+x = zeros(9,kmax);
+FVAL = zeros(1,kmax);
+x(:,1) = x0;
+
+% Initial VSL = 60;
+rDef = 1;
+for k = 1:kmax
+    
+    [U(:,k),FVAL(k),EXITFLAG] = fmincon(@(u)optimFunction(u,x(:,k),q0(k),rDef),U01,A,B,Aeq,beq,lb,ub,nonlcon,options);
+    assert(EXITFLAG>0);
+    if(k<60)
+       x(:,k+1) = updateVal(U(:,k),x(:,k),q0(k),rDef);
+    end
+    U0 = U(:,k);
+
+end
+sum(FVAL)
+plotResults(x,kmax)
+
+% initial VSL = 120;
+U = zeros(3,kmax);
+x = zeros(9,kmax);
+FVAL = zeros(1,kmax);
+x(:,1) = x0;
+rDef = 1;
+for k = 1:kmax
+    
+    [U(:,k),FVAL(k),EXITFLAG] = fmincon(@(u)optimFunction(u,x(:,k),q0(k),rDef),U02,A,B,Aeq,beq,lb,ub,nonlcon,options);
+    assert(EXITFLAG>0);
+    if(k<60)
+       x(:,k+1) = updateVal(U(:,k),x(:,k),q0(k),rDef);
+    end
+    U0 = U(:,k);
+
+end
+sum(FVAL)
+plotResults(x,kmax)
