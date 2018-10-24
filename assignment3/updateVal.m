@@ -1,7 +1,10 @@
-function [xNew] = updateVal(u,x,q0,r)
+function [xNew] = updateVal(u,x,q0)
 %UPDATEX Summary of this function goes here
 %   Detailed explanation goes here
 
+if (size(u,1)<3)
+    r = 1;
+end
 
 parameters;
 
@@ -13,10 +16,10 @@ end
 
 
 VSL =   [
-    ones(1,size(u,2))*VSL0;...
-    u(1,:);...
-    u(2,:);...
-    ones(1,size(u,2))*VSL0];
+    VSL0;...
+    u(1);...
+    u(2);...
+    VSL0];
 
 V  = [  
     min([ (1+alph)* VSL(1), vf*exp(-1/a*(x(1)/rhoc)^a)]);...
