@@ -1,11 +1,7 @@
-function [y] = optimFunction(u,x,q0)
+function [y] = optimF2(u)
 parameters;
+[x1,x2,x3,x4,~,~,~,~,x9] = updateVal(u);
 
-
-xNew = updateVal(u, x,q0);
-
-
-
-y = (T*xNew(9) + T*L*lambda*( xNew(1)+xNew(2)+xNew(3)+xNew(4) ))/3600;
+y = sum( T*x9 + T*L*lambda*(x1+x2+x3+x4))/3600;
 
 end

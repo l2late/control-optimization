@@ -6,102 +6,137 @@ fprintf('Assignment 3 - Nonlinear Programming \n')
 fprintf('Luca de Laat   - 4135040 \n')
 fprintf('Nathan Timmers - 4283449 \n\n')
 
-%% Initializing Constants
-E1 = (0+4)/2;
-E2 = (4+4)/2;
-E3 = (0+9)/2;
-
-plotResult = true;
-
+parameters;
 %% Question 1 & 2
 fprintf('Question 1 & 2: \n')
-parameters;
-Tend    = 60*10;
-kmax = Tend / T + 1;
-
-q0 = [ones(1,12)*(7000+100*E1),ones(1,kmax-12)*(2000+100*E2)];
-
-x = zeros(9,kmax);
-x(:,1) = x0;
-
-% u = [VSL2; VSL3; r(k);
-U0 = [80;80];
-
-lb = [60;60];
-ub = [120;120];
 
 % Inequality constraints
 A = [];
-B = [];
-
-% Equality constraints
+b = [];
+% 
+% % Equality constraints
 Aeq = [];
 beq = [];
 
 nonlcon = [];
 
-% optimFunction(U0,x0,q0(1))
+U0 =[ones(kmax,1);ones(kmax,1)]*110;
 
+lb = ones(size(U0,1),1)*60;
+ub = ones(size(U0,1),1)*120;
 
-[FVAL, U, ~,x] = optMetanet(x,q0,U0,kmax,A,B,Aeq,beq,lb,ub,nonlcon);
+options = optimoptions('fmincon','Display','off');
+[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,options);
+assert(EXITFLAG>0);
+
+[x1,x2,x3,x4,x5,x6,x7,x8,x9] = updateVal(U);
+
 fprintf('Total Time Spent from start to end: %3.2f hours \n\n', FVAL)
 if plotResult
-    plotResults(x,kmax,U)
+    plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
 end
 
 %% Question 3
 fprintf('Question 3: \n')
 
-U01 = [60;60];
-U02 = [120;120];
-x = zeros(9,kmax);
-x(:,1) = x0;
+U01 = [ones(kmax,1);ones(kmax,1)]*61;
+U02 = [ones(kmax,1);ones(kmax,1)]*120;
 
 % Initial VSL = 60;
-[FVAL, U, ~,x] = optMetanet(x,q0,U01,kmax,A,B,Aeq,beq,lb,ub,nonlcon);
-
-fprintf('Total Time Spent from start to end with VSL = %d km/h: %3.2f hours \n',U01(1), FVAL)
-
-if plotResult
-    plotResults(x,kmax,U)
+[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U01,A,b,Aeq,beq,lb,ub,nonlcon,options);
+if(EXITFLAG>0)
+     fprintf('No optimal solution could be obtained for this intial value. \n');
+else
+    [x1,x2,x3,x4,x5,x6,x7,x8,x9] = updateVal(U);
+    
+    fprintf('Total Time Spent from start to end with VSL = %d km/h: %3.2f hours \n',U01(1,1), FVAL)
+    
+    if plotResult
+        plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
+    end
 end
 
 % initial VSL = 120;
-x = zeros(9,kmax);
-x(:,1) = x0;
+[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U02,A,b,Aeq,beq,lb,ub,nonlcon,options);
+assert(EXITFLAG>0);
+[x1,x2,x3,x4,x5,x6,x7,x8,x9] = updateVal(U);
 
-
-[FVAL, U, ~,x] = optMetanet(x,q0,U02,kmax,A,B,Aeq,beq,lb,ub,nonlcon,options);
-
-fprintf('Total Time Spent from start to end with VSL = %d km/h: %3.2f hours \n',U02(1), FVAL)
+fprintf('Total Time Spent from start to end with VSL = %d km/h: %3.2f hours \n',U02(1,1), FVAL)
 
 if plotResult
-    plotResults(x,kmax,U)
+    plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
 end
-
+clear FVAL
 %Find optimum starting point
+
+tic;
+
+FVAL = zeros(1,kmax);
 for j=1:61
-   U03 = [60+(j-1);60+(j-1)];
-   [FVAL(j), ~, ~,x] = optMetanet(x,q0,U03,kmax,A,B,Aeq,beq,lb,ub,nonlcon);
     
+   U03 = [ones(kmax,1);ones(kmax,1)]*(60+(j-1));
+   [UF,FVAL(j),EXITFLAG] = fmincon(@(u)optimFunction(u),U03,A,b,Aeq,beq,lb,ub,nonlcon,options);
+ 
+%    [~,FVAL(j),EXITFLAG] = patternsearch(@(u)optimFunction(u),UF,A,b,Aeq,beq,lb,ub)
+%    simoptions = optimoptions(@simulannealbnd,'Display','iter');
+%    [~,FVAL(j),EXITFLAG] = simulannealbnd(@(u)optimFunction(u),UF,lb,ub,simoptions)
+%    gaoptions = optimoptions('ga','Display','iter');
+%    [~,FVAL(j),EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+   
+   if~(EXITFLAG>0)
+     fprintf('No optimal solution could be obtained for this initial value. \n');
+     FVAL(j) = 9^999;
+   end
 end
+toc;
 
 fprintf('The optimal initial values for the VSL range from %d km/h to %d km/h \n', 59+find(FVAL == min(FVAL),1,'first'), 59+find(FVAL == min(FVAL),1,'last'))
 
 %% Question 4
 fprintf('Question 4: \n')
 
-U0 = [100;100;0.8];
-x = zeros(9,kmax);
-x(:,1) = x0;
+U0 =[ones(kmax,1)*120;ones(kmax,1)*120;ones(kmax,1)*0.7];
+lb = [ones(kmax,1)*60;  ones(kmax,1)*60;  zeros(kmax,1)];
+ub = [ones(kmax,1)*120; ones(kmax,1)*120; ones(kmax,1)];
 
-% Initial VSL = 60;
-rDef = [];
-
-[FVAL, U, ~,x] = optMetanet(x,q0,U0,kmax,A,B,Aeq,beq,lb,ub,nonlcon);
+[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,options);
+if (EXITFLAG>0)
+    Umincon = U;
+    gaoptions = optimoptions('ga','Display','off');
+    [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+    assert(EXITFLAG>0);
+end
+[x1,x2,x3,x4,x5,x6,x7,x8,x9] = updateVal(U);
 
 fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \n', FVAL)
 
 if plotResult
-    plotResults(x,kmax,U)
+    plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
 end
+
+%% Question 6
+fprintf('Question 6: \n')
+
+IntCon = []; %1:2*kmax;
+nonlcon = @mycon;
+U0 =[ones(kmax,1)*70;ones(kmax,1)*70;ones(kmax,1)*0.7];
+
+
+
+A = [blkdiag(-1/20*eye(kmax),1/20*eye(kmax)),zeros(2*kmax,kmax)];
+b = [-3*ones(kmax,1);6*ones(kmax,1)];
+% [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,options)
+gaoptions = optimoptions('ga','Display','iter');
+[U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,IntCon,gaoptions)
+
+if plotResult
+    plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
+end
+
+function [c,ceq] = mycon(u)
+parameters;
+c = 0     ;% Compute nonlinear inequalities at x.
+ceq = mod(u(1:2*kmax),20)  ;% Compute nonlinear equalities at x.
+
+end
+
