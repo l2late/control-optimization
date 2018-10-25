@@ -80,12 +80,14 @@ for j=1:61
 %    [~,FVAL(j),EXITFLAG] = patternsearch(@(u)optimFunction(u),UF,A,b,Aeq,beq,lb,ub)
 %    simoptions = optimoptions(@simulannealbnd,'Display','iter');
 %    [~,FVAL(j),EXITFLAG] = simulannealbnd(@(u)optimFunction(u),UF,lb,ub,simoptions)
-%    gaoptions = optimoptions('ga','Display','iter');
-%    [~,FVAL(j),EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
-   
+
    if~(EXITFLAG>0)
-     fprintf('No optimal solution could be obtained for this initial value. \n');
-     FVAL(j) = 9^999;
+       gaoptions = optimoptions('ga','Display','off');
+       [~,FVAL(j),EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+       if~(EXITFLAG>0)
+           fprintf('No optimal solution could be obtained for this initial value. \n');
+           FVAL(j) = 9^999;
+       end
    end
 end
 toc;
