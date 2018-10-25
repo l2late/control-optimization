@@ -20,7 +20,7 @@ beq = [];
 
 nonlcon = [];
 
-U0 =[ones(kmax,1);ones(kmax,1)]*110;
+U0 =ones(kmax,1)*110;
 
 lb = ones(size(U0,1),1)*60;
 ub = ones(size(U0,1),1)*120;
@@ -29,42 +29,42 @@ options = optimoptions('fmincon','Display','off');
 [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,options);
 assert(EXITFLAG>0);
 
-[x1,x2,x3,x4,x5,x6,x7,x8,x9] = updateVal(U);
+[x] = updateVal(U);
 
 fprintf('Total Time Spent from start to end: %3.2f hours \n\n', FVAL)
 if plotResult
-    plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
+    plotResults(x,kmax,U)
 end
 
 %% Question 3
 fprintf('Question 3: \n')
 
-U01 = [ones(kmax,1);ones(kmax,1)]*61;
-U02 = [ones(kmax,1);ones(kmax,1)]*120;
+U01 = [ones(kmax,1)]*60;
+U02 = [ones(kmax,1)]*120;
 
 % Initial VSL = 60;
 [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U01,A,b,Aeq,beq,lb,ub,nonlcon,options);
 if(EXITFLAG>0)
      fprintf('No optimal solution could be obtained for this intial value. \n');
 else
-    [x1,x2,x3,x4,x5,x6,x7,x8,x9] = updateVal(U);
+    [x] = updateVal(U);
     
     fprintf('Total Time Spent from start to end with VSL = %d km/h: %3.2f hours \n',U01(1,1), FVAL)
     
     if plotResult
-        plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
+        plotResults(x,kmax,U)
     end
 end
 
 % initial VSL = 120;
 [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U02,A,b,Aeq,beq,lb,ub,nonlcon,options);
 assert(EXITFLAG>0);
-[x1,x2,x3,x4,x5,x6,x7,x8,x9] = updateVal(U);
+[x] = updateVal(U);
 
 fprintf('Total Time Spent from start to end with VSL = %d km/h: %3.2f hours \n',U02(1,1), FVAL)
 
 if plotResult
-    plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
+    plotResults(x,kmax,U)
 end
 clear FVAL
 %Find optimum starting point
@@ -74,7 +74,7 @@ tic;
 FVAL = zeros(1,kmax);
 for j=1:61
     
-   U03 = [ones(kmax,1);ones(kmax,1)]*(60+(j-1));
+   U03 = ones(kmax,1)*(60+(j-1));
    [UF,FVAL(j),EXITFLAG] = fmincon(@(u)optimFunction(u),U03,A,b,Aeq,beq,lb,ub,nonlcon,options);
  
 %    [~,FVAL(j),EXITFLAG] = patternsearch(@(u)optimFunction(u),UF,A,b,Aeq,beq,lb,ub)
@@ -95,9 +95,9 @@ fprintf('The optimal initial values for the VSL range from %d km/h to %d km/h \n
 %% Question 4
 fprintf('Question 4: \n')
 
-U0 =[ones(kmax,1)*120;ones(kmax,1)*120;ones(kmax,1)*0.7];
-lb = [ones(kmax,1)*60;  ones(kmax,1)*60;  zeros(kmax,1)];
-ub = [ones(kmax,1)*120; ones(kmax,1)*120; ones(kmax,1)];
+U0 =[ones(kmax,1)*120;ones(kmax,1)*0.7];
+lb = [ones(kmax,1)*60;   zeros(kmax,1)];
+ub = [ones(kmax,1)*120; ones(kmax,1)];
 
 [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,options);
 if (EXITFLAG>0)
@@ -106,12 +106,12 @@ if (EXITFLAG>0)
     [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
     assert(EXITFLAG>0);
 end
-[x1,x2,x3,x4,x5,x6,x7,x8,x9] = updateVal(U);
+[x] = updateVal(U);
 
 fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \n', FVAL)
 
 if plotResult
-    plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
+    plotResults(x,kmax,U)
 end
 
 %% Question 6
@@ -119,24 +119,24 @@ fprintf('Question 6: \n')
 
 IntCon = []; %1:2*kmax;
 nonlcon = @mycon;
-U0 =[ones(kmax,1)*70;ones(kmax,1)*70;ones(kmax,1)*0.7];
+U0 =[ones(kmax,1)*70;ones(kmax,1)*0.7];
 
 
 
-A = [blkdiag(-1/20*eye(kmax),1/20*eye(kmax)),zeros(2*kmax,kmax)];
-b = [-3*ones(kmax,1);6*ones(kmax,1)];
+% A = [blkdiag(-1/20*eye(kmax),1/20*eye(kmax)),zeros(2*kmax,kmax)];
+% b = [-3*ones(kmax,1);6*ones(kmax,1)];
 % [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,options)
 gaoptions = optimoptions('ga','Display','iter');
-[U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,IntCon,gaoptions)
-
+[U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,IntCon,gaoptions);
+[x] = updateVal(U);
 if plotResult
-    plotResults(x1,x2,x3,x4,x5,x6,x7,x8,x9,kmax,U)
+    plotResults(x,kmax,U)
 end
 
 function [c,ceq] = mycon(u)
 parameters;
 c = 0     ;% Compute nonlinear inequalities at x.
-ceq = mod(u(1:2*kmax),20)  ;% Compute nonlinear equalities at x.
+ceq = mod(u(1:kmax),20)  ;% Compute nonlinear equalities at x.
 
 end
 
