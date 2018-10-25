@@ -18,7 +18,7 @@ rhoc    = 28;   % veh/(km*lane)
 L       = 1;    % km
 lambda  = 4;
 Dr      = 1500; %veh/(10s)
-
+betaa   = 10E9; 
 VSL0    = 120;
 
 Tend    = 60*10;
