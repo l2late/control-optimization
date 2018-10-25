@@ -44,6 +44,6 @@ x(8,index+1) = x(8,index) + T/tau * (V(4) - x(8,index)) + T/L*x(8,index)*(x(7,in
 x(9,index+1) = x(9,index) + T*(Dr - qr)/3600;
 
 end
-
+% disp(x(:,1:5))
 end
 

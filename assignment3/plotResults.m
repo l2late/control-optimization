@@ -29,7 +29,9 @@ legend('Density segment 1','Density segment 2','Density segment 3','Density segm
 set(gca,'FontSize',20)   
 
 subplot(4,1,2)
-plot((1:kmax)-1,[x5;x6;x7;x8],(1:(kmax))-1,U1,'--', 'LineWidth',2)
+plot((1:kmax)-1,[x5;x6;x7;x8],'LineWidth',2)
+hold on;
+stairs((1:(kmax))-1,U1,'--', 'LineWidth',2)
 title('Speed')
 ylabel('km/h')
 legend('Speed segment 1', 'Speed segment 2','Speed segment 3','Speed segment 4','VSL'); 
@@ -42,7 +44,7 @@ ylabel('# of cars')
 set(gca,'FontSize',20)  
 
 subplot(4,1,4)
-plot((1:kmax)-1,U2,'LineWidth',2)
+stairs((1:kmax)-1,U2,'LineWidth',2)
 title('On-ramp metering ')
 ylabel('r(k)') 
 set(gca,'FontSize',20) 
