@@ -4,12 +4,11 @@ parameters;
 x = zeros(9,(kmax));
 x(:,1) = x0;
 
-if (size(u,1)/kmax <3)
+if (max(size(u))/kmax <2)
     r = ones(kmax,1);
 else
     r = u(kmax+1:end);
 end
-
 
 for index = 1:(kmax-1)
     
@@ -31,7 +30,7 @@ q = [
     lambda*x(3,index)*x(7,index);...
     lambda*x(4,index)*x(8,index)];
 
-qr = min([1*Cr, Dr + x(9,index)/T, Cr* (rhom-x(4,index)/lambda)/(rhom-rhoc)]);
+qr = min([r(index)*Cr, Dr + x(9,index)/T, Cr* (rhom-x(4,index)/lambda)/(rhom-rhoc)]);
     
     
 x(1,index+1) = x(1,index) + T/(lambda*L)*(q0(index) - q(1))/3600;
