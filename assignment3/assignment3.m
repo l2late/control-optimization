@@ -117,18 +117,23 @@ end
 %% Question 6
 fprintf('Question 6: \n')
 
-IntCon = []; %1:2*kmax;
-nonlcon = @mycon;
-U0 =[ones(kmax,1)*70;ones(kmax,1)*0.7];
+IntCon = 1:kmax;
+nonlcon = [];%@mycon;
 
+U0 =[ones(kmax,1)*120/20;ones(kmax,1)*0.7];
 
+lb = [ones(kmax,1)*60/20;   zeros(kmax,1)];
+ub = [ones(kmax,1)*120/20; ones(kmax,1)];
 
-% A = [blkdiag(-1/20*eye(kmax),1/20*eye(kmax)),zeros(2*kmax,kmax)];
-% b = [-3*ones(kmax,1);6*ones(kmax,1)];
-% [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,options)
-gaoptions = optimoptions('ga','Display','iter');
-[U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,IntCon,gaoptions);
+tic;
+gaoptions = optimoptions('ga','Display','off');
+[U,FVAL,EXITFLAG] = ga(@(u)optimFunctionStep(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,IntCon,gaoptions);
+assert(EXITFLAG>0)
+toc;
+
+U(1:kmax) = 20*U(1:kmax);
 [x] = updateVal(U);
+
 if plotResult
     plotResults(x,kmax,U)
 end
