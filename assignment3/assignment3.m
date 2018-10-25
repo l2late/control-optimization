@@ -13,20 +13,23 @@ fprintf('Question 1 & 2: \n')
 % Inequality constraints
 A = [];
 b = [];
-% 
+%
 % % Equality constraints
 Aeq = [];
 beq = [];
 
 nonlcon = [];
 
-U0 =ones(kmax,1)*110;
-
+U0 = ones(kmax,1)*110;
 lb = ones(size(U0,1),1)*60;
 ub = ones(size(U0,1),1)*120;
 
-options = optimoptions('fmincon','Display','off');
-[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,options);
+% Create multi start problem
+problem = createOptimProblem('fmincon','x0',U0,'objective',@(u)optimFunction(u),'lb',lb, 'ub',ub);
+U0s =  [ones(kmax,1)*60,ones(kmax,1)*70,ones(kmax,1)*80,ones(kmax,1)*90,ones(kmax,1)*100,ones(kmax,1)*110, ones(kmax,1)*120]';
+U0s = CustomStartPointSet(U0s);
+
+[U,FVAL,EXITFLAG,outpt,solutions] = run(MultiStart('UseParallel',true,'Display','off'),problem,U0s);
 assert(EXITFLAG>0);
 
 [x] = updateVal(U);
@@ -38,26 +41,29 @@ end
 
 %% Question 3
 fprintf('Question 3: \n')
+iteratewGA = false; % iterate with both fmincon and genetic? -> TRUE
 
-U01 = [ones(kmax,1)]*60;
-U02 = [ones(kmax,1)]*120;
+U01 = ones(kmax,1)*60;
+U02 = ones(kmax,1)*120;
 
 % Initial VSL = 60;
-[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U01,A,b,Aeq,beq,lb,ub,nonlcon,options);
+[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U01,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
+if~(EXITFLAG>0)
+    [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+    if~(EXITFLAG>0)
+        fprintf('No optimal solution could be obtained for this initial value. \n');
+    end
+end
 if(EXITFLAG>0)
-     fprintf('No optimal solution could be obtained for this intial value. \n');
-else
     [x] = updateVal(U);
-    
     fprintf('Total Time Spent from start to end with VSL = %d km/h: %3.2f hours \n',U01(1,1), FVAL)
-    
     if plotResult
         plotResults(x,kmax,U)
     end
 end
 
 % initial VSL = 120;
-[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U02,A,b,Aeq,beq,lb,ub,nonlcon,options);
+[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U02,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
 assert(EXITFLAG>0);
 [x] = updateVal(U);
 
@@ -67,44 +73,48 @@ if plotResult
     plotResults(x,kmax,U)
 end
 clear FVAL
-%Find optimum starting point
 
-tic;
+% Find optimum starting point
+if (iteratewGA)
+    fprintf('Iterating over different initial points using fmincon and genetic algorithm... \n');
+else
+    fprintf('Iterating over different initial points using only fmincon ... \n');
+end
 
 FVAL = zeros(1,kmax);
 for j=1:61
+    U03 = ones(kmax,1)*(60+(j-1));
+    disp(U03(1));
+    [~,FVAL(j),EXITFLAG] = fmincon(@(u)optimFunction(u),U03,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
     
-   U03 = ones(kmax,1)*(60+(j-1));
-   [UF,FVAL(j),EXITFLAG] = fmincon(@(u)optimFunction(u),U03,A,b,Aeq,beq,lb,ub,nonlcon,options);
- 
-%    [~,FVAL(j),EXITFLAG] = patternsearch(@(u)optimFunction(u),UF,A,b,Aeq,beq,lb,ub)
-%    simoptions = optimoptions(@simulannealbnd,'Display','iter');
-%    [~,FVAL(j),EXITFLAG] = simulannealbnd(@(u)optimFunction(u),UF,lb,ub,simoptions)
-
-   if~(EXITFLAG>0)
-       gaoptions = optimoptions('ga','Display','off');
-       [~,FVAL(j),EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
-       if~(EXITFLAG>0)
-           fprintf('No optimal solution could be obtained for this initial value. \n');
-           FVAL(j) = 9^999;
-       end
-   end
+    if(~EXITFLAG>0 && iteratewGA)
+        [~,FVAL(j),EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+    end
+    if ~(EXITFLAG>0)
+        fprintf('No optimal solution could be obtained for this initial value. \n');
+        FVAL(j) = 9^999;
+    end
+    
 end
-toc;
 
-fprintf('The optimal initial values for the VSL range from %d km/h to %d km/h \n', 59+find(FVAL == min(FVAL),1,'first'), 59+find(FVAL == min(FVAL),1,'last'))
+if (iteratewGA)
+    fprintf('The initial values for the VSL for which the optimal value can be found range from %d km/h to %d km/h \n\n', ...
+        59+find(FVAL == min(FVAL),1,'first'), 59+find(FVAL == min(FVAL),1,'last'));
+else
+    fprintf('The initial values for the VSL for which the optimal value can be found using only fmincon range from %d km/h to %d km/h \n\n',...
+        59+find(FVAL == min(FVAL),1,'first'), 59+find(FVAL == min(FVAL),1,'last'));
+end
 
 %% Question 4
 fprintf('Question 4: \n')
 
-U0 =[ones(kmax,1)*100;ones(kmax,1)*0.4];
+U0 =[ones(kmax,1)*110;ones(kmax,1)*0.7];
 lb = [ones(kmax,1)*60;   zeros(kmax,1)];
 ub = [ones(kmax,1)*120; ones(kmax,1)];
 
-[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,options);
-if (EXITFLAG>0)
+[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
+if ~(EXITFLAG>0)
     Umincon = U;
-    gaoptions = optimoptions('ga','Display','off');
     [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
     assert(EXITFLAG>0);
 end
@@ -120,15 +130,18 @@ end
 fprintf('Question 6: \n')
 
 IntCon = 1:kmax;
-nonlcon = [];%@mycon;
+nonlcon = [];
 
-U0 =[ones(kmax,1)*120/20;ones(kmax,1)*0.7];
+% U0 = ones(kmax,1)*120/20;
+% lb = ones(kmax,1)*60/20;
+% ub = ones(kmax,1)*120/20;
 
+U0 = [ones(kmax,1)*120/20;ones(kmax,1)*0.7];
 lb = [ones(kmax,1)*60/20;   zeros(kmax,1)];
 ub = [ones(kmax,1)*120/20; ones(kmax,1)];
 
 tic;
-gaoptions = optimoptions('ga','Display','off');
+
 [U,FVAL,EXITFLAG] = ga(@(u)optimFunctionStep(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,IntCon,gaoptions);
 assert(EXITFLAG>0)
 toc;
@@ -140,10 +153,4 @@ if plotResult
     plotResults(x,kmax,U)
 end
 
-function [c,ceq] = mycon(u)
-parameters;
-c = 0     ;% Compute nonlinear inequalities at x.
-ceq = mod(u(1:kmax),20)  ;% Compute nonlinear equalities at x.
-
-end
 

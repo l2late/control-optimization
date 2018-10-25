@@ -26,3 +26,7 @@ kmax = Tend / T + 1;
 x0 = [ones(4,1)*20;ones(4,1)*90;0];
 
 q0 = [ones(1,12)*(7000+100*E1),ones(1,kmax-12)*(2000+100*E2)];
+
+% optimization options
+optionsFmincon = optimoptions('fmincon','Display','off','UseParallel',true);
+gaoptions = optimoptions('ga','Display','off','UseParallel',true);
