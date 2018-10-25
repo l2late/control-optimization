@@ -95,7 +95,7 @@ fprintf('The optimal initial values for the VSL range from %d km/h to %d km/h \n
 %% Question 4
 fprintf('Question 4: \n')
 
-U0 =[ones(kmax,1)*120;ones(kmax,1)*0.7];
+U0 =[ones(kmax,1)*100;ones(kmax,1)*0.4];
 lb = [ones(kmax,1)*60;   zeros(kmax,1)];
 ub = [ones(kmax,1)*120; ones(kmax,1)];
 

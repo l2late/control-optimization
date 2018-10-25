@@ -25,7 +25,7 @@ subplot(4,1,1)
 plot((1:kmax)-1,[x1;x2;x3;x4],'LineWidth',2);
 title('Density')
 ylabel('veh/(km lane)')
-legend('Density segment 1','Density segment 2','Density segment 3','Density segment 4');
+legend('\rho_1','\rho_2','\rho_3','\rho_4');
 set(gca,'FontSize',20)   
 
 subplot(4,1,2)
@@ -34,7 +34,7 @@ hold on;
 stairs((1:(kmax))-1,U1,'--', 'LineWidth',2)
 title('Speed')
 ylabel('km/h')
-legend('Speed segment 1', 'Speed segment 2','Speed segment 3','Speed segment 4','VSL'); 
+legend('v_1', 'v_2','v_3','v_4','VSL'); 
 set(gca,'FontSize',20)  
 
 subplot(4,1,3)
