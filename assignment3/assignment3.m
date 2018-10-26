@@ -49,7 +49,7 @@ U02 = ones(kmax,1)*120;
 % Initial VSL = 60;
 [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U01,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
 if~(EXITFLAG>0)
-    [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+    [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U01,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
     if~(EXITFLAG>0)
         fprintf('No optimal solution could be obtained for this initial value. \n');
     end
@@ -88,7 +88,7 @@ for j=1:61
     [~,FVAL(j),EXITFLAG] = fmincon(@(u)optimFunction(u),U03,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
     
     if(~EXITFLAG>0 && iteratewGA)
-        [~,FVAL(j),EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+        [~,FVAL(j),EXITFLAG] = ga(@(u)optimFunction(u),size(U03,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
     end
     if ~(EXITFLAG>0)
         fprintf('No optimal solution could be obtained for this initial value. \n');
