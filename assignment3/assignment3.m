@@ -29,7 +29,7 @@ problem = createOptimProblem('fmincon','x0',U0,'objective',@(u)optimFunction(u),
 U0s =  [ones(kmax,1)*60,ones(kmax,1)*70,ones(kmax,1)*80,ones(kmax,1)*90,ones(kmax,1)*100,ones(kmax,1)*110, ones(kmax,1)*120]';
 U0s = CustomStartPointSet(U0s);
 
-[U,FVAL,EXITFLAG,outpt,solutions] = run(MultiStart('UseParallel',true,'Display','off'),problem,U0s);
+[U,FVAL,EXITFLAG,~,~] = run(MultiStart('UseParallel',true,'Display','off'),problem,U0s);
 assert(EXITFLAG>0);
 
 [x] = updateVal(U);
@@ -38,7 +38,7 @@ fprintf('Total Time Spent from start to end: %3.2f hours \n\n', FVAL)
 if plotResult
     plotResults(x,kmax,U)
 end
-
+clear U0 U x U0s problem EXITFLAG FVAL  
 %% Question 3
 fprintf('Question 3: \n')
 iteratewGA = false; % iterate with both fmincon and genetic? -> TRUE
@@ -49,7 +49,7 @@ U02 = ones(kmax,1)*120;
 % Initial VSL = 60;
 [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U01,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
 if~(EXITFLAG>0)
-    [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+    [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U01,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
     if~(EXITFLAG>0)
         fprintf('No optimal solution could be obtained for this initial value. \n');
     end
@@ -88,7 +88,7 @@ for j=1:61
     [~,FVAL(j),EXITFLAG] = fmincon(@(u)optimFunction(u),U03,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
     
     if(~EXITFLAG>0 && iteratewGA)
-        [~,FVAL(j),EXITFLAG] = ga(@(u)optimFunction(u),size(UF,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+        [~,FVAL(j),EXITFLAG] = ga(@(u)optimFunction(u),size(U03,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
     end
     if ~(EXITFLAG>0)
         fprintf('No optimal solution could be obtained for this initial value. \n');
@@ -104,11 +104,11 @@ else
     fprintf('The initial values for the VSL for which the optimal value can be found using only fmincon range from %d km/h to %d km/h \n\n',...
         59+find(FVAL == min(FVAL),1,'first'), 59+find(FVAL == min(FVAL),1,'last'));
 end
-
+clear U01 U02 U03 U x  EXITFLAG FVAL iteratewGA ub lb
 %% Question 4
 fprintf('Question 4: \n')
 
-U0 =[ones(kmax,1)*110;ones(kmax,1)*0.7];
+U0 =[ones(kmax,1)*100;ones(kmax,1)*0.4];
 lb = [ones(kmax,1)*60;   zeros(kmax,1)];
 ub = [ones(kmax,1)*120; ones(kmax,1)];
 
@@ -125,26 +125,19 @@ fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \
 if plotResult
     plotResults(x,kmax,U)
 end
-
+clear U0 U x EXITFLAG FVAL ub lb
 %% Question 6
 fprintf('Question 6: \n')
 
 IntCon = 1:kmax;
-nonlcon = [];
 
-% U0 = ones(kmax,1)*120/20;
-% lb = ones(kmax,1)*60/20;
-% ub = ones(kmax,1)*120/20;
-
-U0 = [ones(kmax,1)*120/20;ones(kmax,1)*0.7];
-lb = [ones(kmax,1)*60/20;   zeros(kmax,1)];
-ub = [ones(kmax,1)*120/20; ones(kmax,1)];
-
-tic;
+% Without ramp metering
+U0 = ones(kmax,1)*100/20;
+lb = ones(kmax,1)*60/20;
+ub = ones(kmax,1)*120/20;
 
 [U,FVAL,EXITFLAG] = ga(@(u)optimFunctionStep(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,IntCon,gaoptions);
 assert(EXITFLAG>0)
-toc;
 
 U(1:kmax) = 20*U(1:kmax);
 [x] = updateVal(U);
@@ -152,5 +145,27 @@ U(1:kmax) = 20*U(1:kmax);
 if plotResult
     plotResults(x,kmax,U)
 end
+disp(FVAL)
+fprintf('Total Time Spent from start to end without on-ramp metering: %3.2f hours \n', FVAL)
+
+%
+clear U0 U x EXITFLAG FVAL ub lb
+
+% With ramp metering
+U0 = [ones(kmax,1)*100/20;ones(kmax,1)*0.7];
+lb = [ones(kmax,1)*60/20;   zeros(kmax,1)];
+ub = [ones(kmax,1)*120/20; ones(kmax,1)];
+
+[U,FVAL,EXITFLAG] = ga(@(u)optimFunctionStep(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,IntCon,gaoptions);
+assert(EXITFLAG>0)
+
+U(1:kmax) = 20*U(1:kmax);
+[x] = updateVal(U);
+
+if plotResult
+    plotResults(x,kmax,U)
+end
+disp(FVAL)
+fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \n', FVAL)
 
 
