@@ -104,19 +104,20 @@ else
         59+find(FVAL == min(FVAL),1,'first'), 59+find(FVAL == min(FVAL),1,'last'));
 end
 clear U01 U02 U03 U x  EXITFLAG FVAL iteratewGA ub lb
+
 %% Question 4
 fprintf('Question 4: \n')
-
-U0 =[ones(kmax,1)*100;ones(kmax,1)*0.4];
+U0 =[ones(kmax,1)*110;ones(kmax,1)*0.8];
 lb = [ones(kmax,1)*60;   zeros(kmax,1)];
 ub = [ones(kmax,1)*120; ones(kmax,1)];
 
-[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U0,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
-if ~(EXITFLAG>0)
-    Umincon = U;
-    [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
-    assert(EXITFLAG>0);
-end
+[U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+assert(EXITFLAG>0);
+disp(FVAL)
+
+[U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
+assert(EXITFLAG>0);
+disp(FVAL)
 [x] = updateVal(U);
 
 fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \n', FVAL)
@@ -124,7 +125,7 @@ fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \
 if plotResult
     plotResults(x,kmax,U)
 end
-clear U0 U x EXITFLAG FVAL ub lb
+clear U0 U0s U x EXITFLAG FVAL ub lb
 %% Question 6
 fprintf('Question 6: \n')
 
