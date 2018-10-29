@@ -84,7 +84,6 @@ end
 FVAL = zeros(1,kmax);
 for j=1:61
     U03 = ones(kmax,1)*(60+(j-1));
-    disp(U03(1));
     [~,FVAL(j),EXITFLAG] = fmincon(@(u)optimFunction(u),U03,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
     
     if(~EXITFLAG>0 && iteratewGA)
