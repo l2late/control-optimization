@@ -29,9 +29,9 @@ q = [
     lambda*x(1,index)*x(5,index);...
     lambda*x(2,index)*x(6,index);...
     lambda*x(3,index)*x(7,index);...
-    lambda*x(4,index)*x(8,index)];
+    lambda*x(4,index)*x(8,index)]./3600;
 
-qr = min([r(index)*Cr, Dr + x(9,index)/T, Cr * (rhom-x(4,index))/(rhom-rhoc)]);
+qr = min([r(index)*Cr, Dr + x(9,index)/T, Cr* (rhom-x(4,index))/(rhom-rhoc)]);
     
     
 x(1,index+1) = x(1,index) + T/(lambda*L)*(q0(index) - q(1));

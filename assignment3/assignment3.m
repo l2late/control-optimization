@@ -107,8 +107,8 @@ clear U01 U02 U03 U x  EXITFLAG FVAL iteratewGA ub lb
 
 %% Question 4
 fprintf('Question 4: \n')
-U0 =[ones(kmax,1)*110;ones(kmax,1)*0.8];
-lb = [ones(kmax,1)*60;   zeros(kmax,1)];
+U0 =[ones(kmax,1)*110;  ones(kmax,1)*0.8];
+lb = [ones(kmax,1)*60;  zeros(kmax,1)];
 ub = [ones(kmax,1)*120; ones(kmax,1)];
 
 [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
@@ -152,9 +152,9 @@ fprintf('Total Time Spent from start to end without on-ramp metering: %3.2f hour
 clear U0 U x EXITFLAG FVAL ub lb
 
 % With ramp metering
-U0 = [ones(kmax,1)*100/20;ones(kmax,1)*0.7];
+U0 = [ones(kmax,1)*100/20;  ones(kmax,1)*0.7];
 lb = [ones(kmax,1)*60/20;   zeros(kmax,1)];
-ub = [ones(kmax,1)*120/20; ones(kmax,1)];
+ub = [ones(kmax,1)*120/20; 	ones(kmax,1)];
 
 [U,FVAL,EXITFLAG] = ga(@(u)optimFunctionStep(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,IntCon,gaoptions);
 assert(EXITFLAG>0)
