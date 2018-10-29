@@ -6,7 +6,6 @@ x(:,1) = x0;
 
 if (max(size(u))/kmax <2)
     r = ones(kmax,1);
-    disp('Oh oh');
 else
     r = u(kmax+1:end);
 end

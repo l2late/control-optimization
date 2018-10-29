@@ -31,7 +31,7 @@ U0s = CustomStartPointSet(U0s);
 
 [U,FVAL,EXITFLAG,~,~] = run(MultiStart('UseParallel',true,'Display','off'),problem,U0s);
 assert(EXITFLAG>0);
-
+ 
 [x] = updateVal(U);
 
 fprintf('Total Time Spent from start to end: %3.2f hours \n\n', FVAL)
@@ -47,7 +47,9 @@ U01 = ones(kmax,1)*60;
 U02 = ones(kmax,1)*120;
 
 % Initial VSL = 60;
+tic;
 [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U01,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
+toc;
 if~(EXITFLAG>0)
     [U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U01,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
     if~(EXITFLAG>0)
@@ -63,7 +65,9 @@ if(EXITFLAG>0)
 end
 
 % initial VSL = 120;
+tic;
 [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U02,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
+toc;
 assert(EXITFLAG>0);
 [x] = updateVal(U);
 
@@ -96,36 +100,36 @@ for j=1:61
     
 end
 
-if (iteratewGA)
-    fprintf('The initial values for the VSL for which the optimal value can be found range from %d km/h to %d km/h \n\n', ...
-        59+find(FVAL == min(FVAL),1,'first'), 59+find(FVAL == min(FVAL),1,'last'));
-else
-    fprintf('The initial values for the VSL for which the optimal value can be found using only fmincon range from %d km/h to %d km/h \n\n',...
-        59+find(FVAL == min(FVAL),1,'first'), 59+find(FVAL == min(FVAL),1,'last'));
-end
+fprintf('The initial values for the VSL and the optimal value that can be found:\n')
+disp([60:120;FVAL])
+        
+plot(60:120,FVAL,'LineWidth',2)
+title('Optimum values for different u(0)')
+ylabel('TTS [hours]')
+xlabel('u(0) [km/h]')
+set(gca,'FontSize',20)  
 clear U01 U02 U03 U x  EXITFLAG FVAL iteratewGA ub lb
 
 %% Question 4
 fprintf('Question 4: \n')
-U0 =[ones(kmax,1)*110;ones(kmax,1)*0.8];
+U0 =[ones(kmax,1);ones(kmax,1)];
 lb = [ones(kmax,1)*60;   zeros(kmax,1)];
 ub = [ones(kmax,1)*120; ones(kmax,1)];
 
-[U,FVAL,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
+[U,~,EXITFLAG] = ga(@(u)optimFunction(u),size(U0,1),A,b,Aeq,beq,lb,ub,nonlcon,gaoptions);
 assert(EXITFLAG>0);
-disp(FVAL)
 
 [U,FVAL,EXITFLAG] = fmincon(@(u)optimFunction(u),U,A,b,Aeq,beq,lb,ub,nonlcon,optionsFmincon);
 assert(EXITFLAG>0);
-disp(FVAL)
+
 [x] = updateVal(U);
 
-fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \n', FVAL)
+fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \n\n', FVAL)
 
 if plotResult
     plotResults(x,kmax,U)
 end
-clear U0 U0s U x EXITFLAG FVAL ub lb
+clear U0 U x EXITFLAG FVAL ub lb
 %% Question 6
 fprintf('Question 6: \n')
 
@@ -145,14 +149,14 @@ U(1:kmax) = 20*U(1:kmax);
 if plotResult
     plotResults(x,kmax,U)
 end
-disp(FVAL)
+
 fprintf('Total Time Spent from start to end without on-ramp metering: %3.2f hours \n', FVAL)
 
 %
 clear U0 U x EXITFLAG FVAL ub lb
 
 % With ramp metering
-U0 = [ones(kmax,1)*100/20;ones(kmax,1)*0.7];
+U0 = [ones(kmax,1);ones(kmax,1)];
 lb = [ones(kmax,1)*60/20;   zeros(kmax,1)];
 ub = [ones(kmax,1)*120/20; ones(kmax,1)];
 
@@ -165,7 +169,7 @@ U(1:kmax) = 20*U(1:kmax);
 if plotResult
     plotResults(x,kmax,U)
 end
-disp(FVAL)
-fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \n', FVAL)
+
+fprintf('Total Time Spent from start to end with on-ramp metering: %3.2f hours \n\n', FVAL)
 
 
